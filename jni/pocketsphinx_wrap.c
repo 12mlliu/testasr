@@ -838,30 +838,6 @@ static jdoubleArray SWIG_JavaArrayOutDouble (JNIEnv *jenv, double *result, jsize
 
 typedef cmd_ln_t Config;
 
-
-
-typedef struct {
-        char *hypstr;
-        int best_score;
-        int prob;
-}Hypothesis;
-
-
-SWIGINTERN Hypothesis *new_Hypothesis(char const *hypstr,int best_score,int prob){
-                Hypothesis *h = (Hypothesis *)ckd_malloc(sizeof *h);
-                if (hypstr)
-                        h->hypstr = ckd_salloc(hypstr);
-                else
-                        h->hypstr = NULL;
-                h->best_score = best_score;
-                h->prob = prob;
-                return h;
-        }
-SWIGINTERN void delete_Hypothesis(Hypothesis *self){
-                if (self->hypstr)
-                        ckd_free(self->hypstr);
-                ckd_free(self);
-        }
 SWIGINTERN Decoder *new_Decoder__SWIG_0(int *errcode){
                 Decoder *d = ps_init(cmd_ln_init(NULL,ps_args(),FALSE,NULL));
                 *errcode = d ? 0 : -1;
@@ -887,156 +863,18 @@ SWIGINTERN int Decoder_process_raw(Decoder *self,int16 const *SDATA,size_t NSAMP
 SWIGINTERN void Decoder_end_utt(Decoder *self,int *errcode){
                 *errcode = ps_end_utt(self);
         }
-SWIGINTERN void Decoder_set_rawdata_size(Decoder *self,size_t size){
-                ps_set_rawdata_size(self,size);
-        }
-SWIGINTERN int16 *Decoder_get_rawdata(Decoder *self,int32 *RAWDATA_SIZE){
-                int16 *result;
-                ps_get_rawdata(self,&result,RAWDATA_SIZE);
-                return result;
-        }
-SWIGINTERN Hypothesis *Decoder_hyp(Decoder *self){
+SWIGINTERN char const *Decoder_seg_threshold(Decoder *self,int32 threshold,char const *orderfilename){
                 char const *hypstr;
-                int32 best_score,prob;
-                hypstr = ps_get_hyp(self,&best_score);
-                if (hypstr)
-                        prob = ps_get_prob(self);
-                return hypstr ? new_Hypothesis(hypstr,best_score,prob) : NULL;
+                hypstr = ps_seg_threshold(self,threshold,orderfilename);
+                return hypstr;
+        }
+SWIGINTERN int32 Decoder_getscore(Decoder *self,char const *hyp){
+                return ps_seg_threshold_getscore(self,hyp);
         }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-SWIGEXPORT void JNICALL Java_com_midea_asr_PocketSphinxJNI_Hypothesis_1hypstr_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
-  Hypothesis *arg1 = (Hypothesis *) 0 ;
-  char *arg2 = (char *) 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Hypothesis **)&jarg1; 
-  arg2 = 0;
-  if (jarg2) {
-    arg2 = (char *)(*jenv)->GetStringUTFChars(jenv, jarg2, 0);
-    if (!arg2) return ;
-  }
-  {
-    free(arg1->hypstr);
-    if (arg2) {
-      arg1->hypstr = (char *) malloc(strlen((const char *)arg2)+1);
-      strcpy((char *)arg1->hypstr, (const char *)arg2);
-    } else {
-      arg1->hypstr = 0;
-    }
-  }
-  if (arg2) (*jenv)->ReleaseStringUTFChars(jenv, jarg2, (const char *)arg2);
-}
-
-
-SWIGEXPORT jstring JNICALL Java_com_midea_asr_PocketSphinxJNI_Hypothesis_1hypstr_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jstring jresult = 0 ;
-  Hypothesis *arg1 = (Hypothesis *) 0 ;
-  char *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Hypothesis **)&jarg1; 
-  result = (char *) ((arg1)->hypstr);
-  if (result) jresult = (*jenv)->NewStringUTF(jenv, (const char *)result);
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_com_midea_asr_PocketSphinxJNI_Hypothesis_1bestScore_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
-  Hypothesis *arg1 = (Hypothesis *) 0 ;
-  int arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Hypothesis **)&jarg1; 
-  arg2 = (int)jarg2; 
-  if (arg1) (arg1)->best_score = arg2;
-}
-
-
-SWIGEXPORT jint JNICALL Java_com_midea_asr_PocketSphinxJNI_Hypothesis_1bestScore_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jint jresult = 0 ;
-  Hypothesis *arg1 = (Hypothesis *) 0 ;
-  int result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Hypothesis **)&jarg1; 
-  result = (int) ((arg1)->best_score);
-  jresult = (jint)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_com_midea_asr_PocketSphinxJNI_Hypothesis_1prob_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
-  Hypothesis *arg1 = (Hypothesis *) 0 ;
-  int arg2 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Hypothesis **)&jarg1; 
-  arg2 = (int)jarg2; 
-  if (arg1) (arg1)->prob = arg2;
-}
-
-
-SWIGEXPORT jint JNICALL Java_com_midea_asr_PocketSphinxJNI_Hypothesis_1prob_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jint jresult = 0 ;
-  Hypothesis *arg1 = (Hypothesis *) 0 ;
-  int result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Hypothesis **)&jarg1; 
-  result = (int) ((arg1)->prob);
-  jresult = (jint)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_com_midea_asr_PocketSphinxJNI_new_1Hypothesis(JNIEnv *jenv, jclass jcls, jstring jarg1, jint jarg2, jint jarg3) {
-  jlong jresult = 0 ;
-  char *arg1 = (char *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  Hypothesis *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = 0;
-  if (jarg1) {
-    arg1 = (char *)(*jenv)->GetStringUTFChars(jenv, jarg1, 0);
-    if (!arg1) return 0;
-  }
-  arg2 = (int)jarg2; 
-  arg3 = (int)jarg3; 
-  result = (Hypothesis *)new_Hypothesis((char const *)arg1,arg2,arg3);
-  *(Hypothesis **)&jresult = result; 
-  if (arg1) (*jenv)->ReleaseStringUTFChars(jenv, jarg1, (const char *)arg1);
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_com_midea_asr_PocketSphinxJNI_delete_1Hypothesis(JNIEnv *jenv, jclass jcls, jlong jarg1) {
-  Hypothesis *arg1 = (Hypothesis *) 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = *(Hypothesis **)&jarg1; 
-  delete_Hypothesis(arg1);
-}
-
 
 SWIGEXPORT jlong JNICALL Java_com_midea_asr_PocketSphinxJNI_new_1Decoder_1_1SWIG_10(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
@@ -1195,51 +1033,48 @@ SWIGEXPORT void JNICALL Java_com_midea_asr_PocketSphinxJNI_Decoder_1endUtt(JNIEn
 }
 
 
-SWIGEXPORT void JNICALL Java_com_midea_asr_PocketSphinxJNI_Decoder_1setRawdataSize(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jstring JNICALL Java_com_midea_asr_PocketSphinxJNI_Decoder_1segThreshold(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jstring jarg3) {
+  jstring jresult = 0 ;
   Decoder *arg1 = (Decoder *) 0 ;
-  size_t arg2 ;
+  int32 arg2 ;
+  char *arg3 = (char *) 0 ;
+  char *result = 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(Decoder **)&jarg1; 
-  arg2 = (size_t)jarg2; 
-  Decoder_set_rawdata_size(arg1,arg2);
-}
-
-
-SWIGEXPORT jshortArray JNICALL Java_com_midea_asr_PocketSphinxJNI_Decoder_1getRawdata(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jshortArray jresult = 0 ;
-  Decoder *arg1 = (Decoder *) 0 ;
-  int32 *arg2 = (int32 *) 0 ;
-  int16 *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  int32 temp_len;
-  arg2 = &temp_len;
-  (void)jarg1_;
-  arg1 = *(Decoder **)&jarg1; 
-  result = (int16 *)Decoder_get_rawdata(arg1,arg2);
-  {
-    jresult = (*jenv)->NewShortArray(jenv, temp_len);
-    (*jenv)->SetShortArrayRegion(jenv, jresult, 0, temp_len, result);
+  arg2 = (int32)jarg2; 
+  arg3 = 0;
+  if (jarg3) {
+    arg3 = (char *)(*jenv)->GetStringUTFChars(jenv, jarg3, 0);
+    if (!arg3) return 0;
   }
+  result = (char *)Decoder_seg_threshold(arg1,arg2,(char const *)arg3);
+  if (result) jresult = (*jenv)->NewStringUTF(jenv, (const char *)result);
+  if (arg3) (*jenv)->ReleaseStringUTFChars(jenv, jarg3, (const char *)arg3);
   return jresult;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_com_midea_asr_PocketSphinxJNI_Decoder_1hyp(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_com_midea_asr_PocketSphinxJNI_Decoder_1getscore(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+  jint jresult = 0 ;
   Decoder *arg1 = (Decoder *) 0 ;
-  Hypothesis *result = 0 ;
+  char *arg2 = (char *) 0 ;
+  int32 result;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(Decoder **)&jarg1; 
-  result = (Hypothesis *)Decoder_hyp(arg1);
-  *(Hypothesis **)&jresult = result; 
+  arg2 = 0;
+  if (jarg2) {
+    arg2 = (char *)(*jenv)->GetStringUTFChars(jenv, jarg2, 0);
+    if (!arg2) return 0;
+  }
+  result = Decoder_getscore(arg1,(char const *)arg2);
+  jresult = (jint)result; 
+  if (arg2) (*jenv)->ReleaseStringUTFChars(jenv, jarg2, (const char *)arg2);
   return jresult;
 }
 

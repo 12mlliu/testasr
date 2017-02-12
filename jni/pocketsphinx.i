@@ -35,38 +35,9 @@ typedef ps_decoder_t Decoder;
 /*inline can creat a new struct 
 for Hypothesis output string
 three items */
-%inline %{
-
-typedef struct {
-        char *hypstr;
-        int best_score;
-        int prob;
-}Hypothesis;
-
-%} 
 
 /*question2: what why */
 typedef struct {} Decoder;
-
-/*extend can class Hypothesis,which action just as c++ class*/
-%extend Hypothesis {
-        Hypothesis(char const *hypstr, int best_score, int prob){
-                Hypothesis *h = (Hypothesis *)ckd_malloc(sizeof *h);
-                if (hypstr)
-                        h->hypstr = ckd_salloc(hypstr);
-                else
-                        h->hypstr = NULL;
-                h->best_score = best_score;
-                h->prob = prob;
-                return h;
-        }
-        
-        ~Hypothesis() {
-                if ($self->hypstr)
-                        ckd_free($self->hypstr);
-                ckd_free($self);
-        }
-}
 
 /*Decoder class
 contain the struct instance and the fuction needed to decoder*/
@@ -111,28 +82,15 @@ contain the struct instance and the fuction needed to decoder*/
         void end_utt(int *errcode){
                 *errcode = ps_end_utt($self);
         }
-        /*set the limit of the raw audio
-        decoder will ckd_calloc size memory for the raw data*/
-        void set_rawdata_size(size_t size) {
-                ps_set_rawdata_size($self,size);
+        
+        char const *seg_threshold(int32 threshold,char const*orderfilename){
+                char const *hypstr;
+                hypstr = ps_seg_threshold($self,threshold,orderfilename);
+                return hypstr;
         }
-        /*retrieves the raw data collected during utterance decoding
-        return the result is the buffer which is exactly the input of decoder
-        by result.length we can know the size of raw data*/
-        int16 *get_rawdata(int32 *RAWDATA_SIZE) {
-                int16 *result;
-                ps_get_rawdata($self,&result,RAWDATA_SIZE);
-                return result;
+        int32 getscore(char const *hyp){
+                return ps_seg_threshold_getscore($self,hyp);
         }
         
-        %newobject hyp;
-        Hypothesis *hyp() {
-                char const *hypstr;
-                int32 best_score,prob;
-                hypstr = ps_get_hyp($self,&best_score);
-                if (hypstr)
-                        prob = ps_get_prob($self);
-                return hypstr ? new_Hypothesis(hypstr,best_score,prob) : NULL;
-        }
 
 }

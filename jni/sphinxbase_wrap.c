@@ -17,7 +17,7 @@ typedef int bool;
 
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/err.h>
-
+#include <pocketsphinx.h>
 typedef cmd_ln_t Config;
 
 
@@ -837,6 +837,10 @@ static jdoubleArray SWIG_JavaArrayOutDouble (JNIEnv *jenv, double *result, jsize
 
 #endif
 
+SWIGINTERN Config *new_Config(void){
+        Config *c = cmd_ln_parse_r(NULL,ps_args(),0,NULL,FALSE);
+        return c;
+    }
 SWIGINTERN void delete_Config(Config *self){
         cmd_ln_free_r(self);
     }
@@ -850,6 +854,18 @@ SWIGINTERN void Config_set_float(Config *self,char const *key,double val){
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+SWIGEXPORT jlong JNICALL Java_com_midea_asr_SphinxBaseJNI_new_1Config(JNIEnv *jenv, jclass jcls) {
+  jlong jresult = 0 ;
+  Config *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (Config *)new_Config();
+  *(Config **)&jresult = result; 
+  return jresult;
+}
+
 
 SWIGEXPORT void JNICALL Java_com_midea_asr_SphinxBaseJNI_delete_1Config(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   Config *arg1 = (Config *) 0 ;
