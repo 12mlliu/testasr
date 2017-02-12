@@ -9,6 +9,7 @@
 package com.midea.asr;
 
 public class SphinxBaseJNI {
+  public final static native long new_Config();
   public final static native void delete_Config(long jarg1);
   public final static native void Config_setString(long jarg1, Config jarg1_, String jarg2, String jarg3);
   public final static native void Config_setFloat(long jarg1, Config jarg1_, String jarg2, double jarg3);

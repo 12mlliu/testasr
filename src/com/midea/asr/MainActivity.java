@@ -24,7 +24,7 @@ import com.midea.asr.R.layout;
 
 import com.midea.asr.Config;
 import com.midea.asr.Decoder;
-import com.midea.asr.Hypothesis;
+//import com.midea.asr.Hypothesis;
 
 
 public class MainActivity extends Activity implements OnClickListener {
@@ -60,9 +60,9 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 	private void onStartRecord() {
 		Config c = Decoder.defaultConfig();
-        c.setString("-hmm", "/mnt/sdcard/lml/cn-model/tdt_sc_8k");
-        c.setString("-lm", "/mnt/sdcard/lml/cn-model/ask.lm.DMP");
-        c.setString("-dict", "/mnt/sdcard/lml/cn-model/ask.dic");
+        c.setString("-hmm", "/mnt/sdcard/edu.cmu.pocketsphinx/hmm/zh_CN/tdt_sc_8k");
+        c.setString("-lm", "/mnt/sdcard/edu.cmu.pocketsphinx/hmm/zh_CN/ask.lm.DMP");
+        c.setString("-dict", "/mnt/sdcard/edu.cmu.pocketsphinx/hmm/zh_CN/ask.dic");
         c.setFloat("-samprate",8000);
         
         Decoder d = new Decoder(c);
@@ -71,14 +71,14 @@ public class MainActivity extends Activity implements OnClickListener {
         @SuppressWarnings("resource")
 		FileInputStream ais = null;
 		try {
-			ais = new FileInputStream(new File("/mnt/sdcard/lml/cn-model/test.raw"));
+			ais = new FileInputStream(new File("/mnt/sdcard/midea/test.raw"));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		//Decoder d = new Decoder();
         d.startUtt();
-        d.setRawdataSize(300000);
+        //d.setRawdataSize(300000);
         byte[] b = new byte[4096];
         int nbytes;
         try {
@@ -96,7 +96,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			e.printStackTrace();
 		}
         d.endUtt();
-        System.out.println("+++INFO: " + d.hyp().getHypstr());
+        int thre = 40;
+        String orderfilename = "/mnt/sdcard/edu.cmu.pocketsphinx/hmm/zh_CN/order.txt";
+        System.out.println("+++INFO: " + d.segThreshold(thre,orderfilename)+ d.getscore(d.segThreshold(thre,orderfilename)));
 	
 	}
 }

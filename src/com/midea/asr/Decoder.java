@@ -60,17 +60,12 @@ public class Decoder {
     PocketSphinxJNI.Decoder_endUtt(swigCPtr, this);
   }
 
-  public void setRawdataSize(long size) {
-    PocketSphinxJNI.Decoder_setRawdataSize(swigCPtr, this, size);
+  public String segThreshold(int threshold, String orderfilename) {
+    return PocketSphinxJNI.Decoder_segThreshold(swigCPtr, this, threshold, orderfilename);
   }
 
-  public short[] getRawdata() {
-  return PocketSphinxJNI.Decoder_getRawdata(swigCPtr, this);
-}
-
-  public Hypothesis hyp() {
-    long cPtr = PocketSphinxJNI.Decoder_hyp(swigCPtr, this);
-    return (cPtr == 0) ? null : new Hypothesis(cPtr, true);
+  public int getscore(String hyp) {
+    return PocketSphinxJNI.Decoder_getscore(swigCPtr, this, hyp);
   }
 
 }

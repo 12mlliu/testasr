@@ -35,6 +35,10 @@ public class Config {
     }
   }
 
+  public Config() {
+    this(SphinxBaseJNI.new_Config(), true);
+  }
+
   public void setString(String key, String val) {
     SphinxBaseJNI.Config_setString(swigCPtr, this, key, val);
   }
