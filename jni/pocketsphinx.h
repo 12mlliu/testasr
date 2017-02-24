@@ -358,13 +358,6 @@ POCKETSPHINX_EXPORT
 int32 ps_seg_threshold_getscore(ps_decoder_t *ps,char const *hyp);
 POCKETSPHINX_EXPORT
 char const *ps_seg_threshold(ps_decoder_t *ps,int32 threshold,char const *orderfilename);
-/*
- * my own function
- * given the config , audio data , and audio data size
- * return hyp
- */
-POCKETSPHINX_EXPORT
-char const *ps_decoder_test(cmd_ln_t *config, int16 const *data,size_t n_samples);
 
 /**
  * Decode acoustic feature data.

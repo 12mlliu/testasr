@@ -33,7 +33,7 @@ typedef int bool;
 
 #include <sphinxbase/cmd_ln.h>
 #include <sphinxbase/err.h>
-
+#include <pocketsphinx.h>
 typedef cmd_ln_t Config;
 %}
 
@@ -46,6 +46,10 @@ typedef struct {} Config;
 
 %extend Config {
 
+    Config(){
+        Config *c = cmd_ln_parse_r(NULL,ps_args(),0,NULL,FALSE);
+        return c;
+    }
     ~Config() {
         cmd_ln_free_r($self);
     }
@@ -54,5 +58,7 @@ typedef struct {} Config;
     void set_string(const char *key, const char *val) {
         cmd_ln_set_str_r($self, key, val);
     }
-
+    void set_float(const char *key,double val){
+        cmd_ln_set_float_r($self,key,val);
+    }
 }

@@ -63,7 +63,12 @@
 #include "ngram_search_fwdtree.h"
 #include "ngram_search_fwdflat.h"
 #include "allphone_search.h"
-
+/*logd*/
+#include <android/log.h>
+#define LOG_TAG "pocketsphinx.c"
+#define LOGI(fmt, args...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, fmt, ##args)
+#define LOGD(fmt, args...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, fmt, ##args)
+#define LOGE(fmt, args...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, fmt, ##args)
 static const arg_t ps_args_def[] = {
     POCKETSPHINX_OPTIONS,
     CMDLN_EMPTY_OPTION
@@ -935,17 +940,20 @@ ps_start_stream(ps_decoder_t *ps)
 int
 ps_start_utt(ps_decoder_t *ps)
 {
+    LOGD("++++INFO: step2-1 start_utt begin");
     int rv;
     char uttid[16];
     
     if (ps->acmod->state == ACMOD_STARTED || ps->acmod->state == ACMOD_PROCESSING) {
 	E_ERROR("Utterance already started\n");
+	LOGD("++++INFO: step2-2 start_utt end");
 	return -1;
     }
 
     if (ps->search == NULL) {
         E_ERROR("No search module is selected, did you forget to "
                 "specify a language model or grammar?\n");
+	LOGD("++++INFO: step2-2 start_utt end");
         return -1;
     }
 
@@ -963,7 +971,7 @@ ps_start_utt(ps_decoder_t *ps)
     ckd_free(ps->search->hyp_str);
     ps->search->hyp_str = NULL;
     if ((rv = acmod_start_utt(ps->acmod)) < 0)
-        return rv;
+        {LOGD("++++INFO: step2-2 start_utt end");return rv;}
 
     /* Start logging features and audio if requested. */
     if (ps->mfclogdir) {
@@ -974,6 +982,7 @@ ps_start_utt(ps_decoder_t *ps)
         if ((mfcfh = fopen(logfn, "wb")) == NULL) {
             E_ERROR_SYSTEM("Failed to open MFCC file %s", logfn);
             ckd_free(logfn);
+	    LOGD("++++INFO: step2-2 start_utt end");
             return -1;
         }
         ckd_free(logfn);
@@ -987,6 +996,7 @@ ps_start_utt(ps_decoder_t *ps)
         if ((rawfh = fopen(logfn, "wb")) == NULL) {
             E_ERROR_SYSTEM("Failed to open raw audio file %s", logfn);
             ckd_free(logfn);
+	    LOGD("++++INFO: step2-2 start_utt end");
             return -1;
         }
         ckd_free(logfn);
@@ -1000,6 +1010,7 @@ ps_start_utt(ps_decoder_t *ps)
         if ((senfh = fopen(logfn, "wb")) == NULL) {
             E_ERROR_SYSTEM("Failed to open senone score file %s", logfn);
             ckd_free(logfn);
+	    LOGD("++++INFO: step2-2 start_utt end");
             return -1;
         }
         ckd_free(logfn);
@@ -1009,6 +1020,7 @@ ps_start_utt(ps_decoder_t *ps)
     /* Start auxiliary phone loop search. */
     if (ps->phone_loop)
         ps_search_start(ps->phone_loop);
+    LOGD("++++INFO: step2-2 start_utt end");
 
     return ps_search_start(ps->search);
 }
@@ -1063,10 +1075,12 @@ ps_process_raw(ps_decoder_t *ps,
                int no_search,
                int full_utt)
 {
+    LOGD("++++INFO: step3-1 process_raw begin");
     int n_searchfr = 0;
 
     if (ps->acmod->state == ACMOD_IDLE) {
 	E_ERROR("Failed to process data, utterance is not started. Use start_utt to start it\n");
+	LOGD("++++INFO: step3-2 process_raw end");
 	return 0;
     }
 
@@ -1079,22 +1093,25 @@ ps_process_raw(ps_decoder_t *ps,
         /* Process some data into features. */
         if ((nfr = acmod_process_raw(ps->acmod, &data,
                                      &n_samples, full_utt)) < 0)
-            return nfr;
+            {LOGD("++++INFO: step3-2 process_raw end");return nfr;}
 
         /* Score and search as much data as possible */
         if (no_search)
             continue;
         if ((nfr = ps_search_forward(ps)) < 0)
-            return nfr;
+	    {LOGD("++++INFO: step3-2 process_raw end");
+            return nfr;}
         n_searchfr += nfr;
     }
 
+    LOGD("++++INFO: step3-2 process_raw end");
     return n_searchfr;
 }
 
 char const *
 ps_seg_threshold(ps_decoder_t *ps,int32 threshold,char const *orderfilename)
 {
+    LOGD("++++INFO: step5-1 ps_seg_threshold begin");
     /*read the order.txt*/
     glist_t keyphrases;
     FILE *list_file;
@@ -1103,6 +1120,7 @@ ps_seg_threshold(ps_decoder_t *ps,int32 threshold,char const *orderfilename)
     int countall=0;
     if((list_file = fopen(orderfilename,"r"))==NULL){
         printf("failed to open file");
+	LOGD("++++INFO: step5-2 ps_seg_threshold end");
         return NULL;
     }
     for(li= lineiter_start_clean(list_file);li;li = lineiter_next(li)){
@@ -1117,7 +1135,8 @@ ps_seg_threshold(ps_decoder_t *ps,int32 threshold,char const *orderfilename)
 
     /*threshold*/
     ps_seg_t *iter = ps_seg_iter(ps);
-    char const * hyp="";
+    char const * hyp=NULL;
+    int match_num = 0;
     while (iter != NULL)
     {
         int32 sf, ef, pprob;
@@ -1129,6 +1148,8 @@ ps_seg_threshold(ps_decoder_t *ps,int32 threshold,char const *orderfilename)
 		if(count > countall){break;}
                 char * order = gnode_ptr(gn);
                 if (!strcmp(order,ps_seg_word (iter))){
+			match_num++;
+			if (match_num >1){LOGD("++++INFO: step5-2 ps_seg_threshold end");return NULL;}
                         ps_seg_frames (iter, &sf, &ef);
                         pprob = ps_seg_prob (iter, NULL, NULL, NULL);
                         conf = logmath_exp(ps_get_logmath(ps), pprob);
@@ -1139,15 +1160,17 @@ ps_seg_threshold(ps_decoder_t *ps,int32 threshold,char const *orderfilename)
         }
         iter = ps_seg_next (iter);
     }
+    LOGD("++++INFO: step5-2 ps_seg_threshold end");
     return hyp;
 }
 
 int32
 ps_seg_threshold_getscore(ps_decoder_t *ps,char const *hyp)
 {
-
+    LOGD("++++INFO: step6-1 getscore begin");
     /*threshold*/
-    if(!(strcmp(hyp,""))){return 0;}
+    //if(!(strcmp(hyp,""))){return 0;}
+    if(hyp==NULL){return 0;}
     int32 score =0;
     ps_seg_t *iter = ps_seg_iter(ps);
     while (iter != NULL)
@@ -1163,22 +1186,8 @@ ps_seg_threshold_getscore(ps_decoder_t *ps,char const *hyp)
 
         iter = ps_seg_next (iter);
     }
+	LOGD("++++INFO: step6-2 getscore end");
 	return score;
-}
-char const *
-ps_decoder_test(cmd_ln_t *config, int16 const *data,size_t n_samples)
-{
-	    ps_decoder_t *ps;
-	    char const *hyp;
-	    int32 score;
-
-	    ps = ps_init(config);
-	    ps_start_utt(ps);
-	    ps_process_raw(ps, data, n_samples, FALSE, TRUE);
-	    ps_end_utt(ps);
-	    hyp = ps_get_hyp(ps, &score);
-	    //printf("+++INFO: hyp = %s\n",hyp);
-	    return hyp;
 }
 
 int
@@ -1215,10 +1224,12 @@ ps_process_cep(ps_decoder_t *ps,
 int
 ps_end_utt(ps_decoder_t *ps)
 {
+    LOGD("++++INFO: step4-1 end_utt bengin");
     int rv, i;
 
     if (ps->acmod->state == ACMOD_ENDED || ps->acmod->state == ACMOD_IDLE) {
 	E_ERROR("Utterance is not started\n");
+	LOGD("++++INFO: step4-2 end_utt end");
 	return -1;
     }
     acmod_end_utt(ps->acmod);
@@ -1226,12 +1237,14 @@ ps_end_utt(ps_decoder_t *ps)
     /* Search any remaining frames. */
     if ((rv = ps_search_forward(ps)) < 0) {
         ptmr_stop(&ps->perf);
+	LOGD("++++INFO: step4-2 end_utt end");
         return rv;
     }
     /* Finish phone loop search. */
     if (ps->phone_loop) {
         if ((rv = ps_search_finish(ps->phone_loop)) < 0) {
             ptmr_stop(&ps->perf);
+	    LOGD("++++INFO: step4-2 end_utt end");
             return rv;
         }
     }
@@ -1244,6 +1257,7 @@ ps_end_utt(ps_decoder_t *ps)
     /* Finish main search. */
     if ((rv = ps_search_finish(ps->search)) < 0) {
         ptmr_stop(&ps->perf);
+	LOGD("++++INFO: step4-2 end_utt end");
         return rv;
     }
     ptmr_stop(&ps->perf);
@@ -1275,6 +1289,7 @@ ps_end_utt(ps_decoder_t *ps)
     	    }
         }
     }
+    LOGD("++++INFO: step4-2 end_utt end");
     return rv;
 }
 
